@@ -1,0 +1,25 @@
+{
+  "name": "jamesoates/gelato-checkout",
+  "description": "Implement code for a supermarket checkout that calculates the total price of a number of items",
+  "minimum-stability": "stable",
+  "license": "proprietary",
+  "authors": [
+    {
+      "name": "James Oates",
+      "email": "jamesoates88@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Gelato\\": "src/"
+    }
+  },
+  "autoload-dev": {
+    "psr-4": {
+      "Tests\\Gelato\\": "tests/"
+    }
+  },
+  "require-dev": {
+    "phpunit/phpunit": "8.1.5"
+  }
+}
