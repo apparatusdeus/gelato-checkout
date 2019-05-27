@@ -3,6 +3,7 @@
 namespace Gelato\Service;
 
 use Gelato\Entities\ProductInterface;
+use Gelato\Entities\ProductLine;
 
 class CheckOut
 {
@@ -22,10 +23,15 @@ class CheckOut
     public function getGrandTotal()
     {
         $checkoutTotal = 0.0;
+
+        /**
+         * @var string $sku
+         * @var ProductLine $line
+         */
         foreach($this->productLines as $sku => $line)
         {
-            $product = $line['product'];
-            $productQuantity = $line['qty'];
+            $product = $line->getProduct();
+            $productQuantity = $line->getQuantity();
             $rules = [];
             if(array_key_exists($sku, $this->pricingRules)) {
                 $rules = $this->pricingRules[$sku];
@@ -55,13 +61,10 @@ class CheckOut
     public function scanItem(ProductInterface $product): void
     {
         if(!array_key_exists($product->getSku(), $this->productLines)) {
-            $this->productLines[$product->getSku()] = [
-                'product' => $product,
-                'qty' => 0
-            ];
+            $this->productLines[$product->getSku()] = new ProductLine($product);
         }
 
         // Increase the quantity of products by one
-        $this->productLines[$product->getSku()]['qty']++;
+        $this->productLines[$product->getSku()]->incrementQuantity();
     }
 }
