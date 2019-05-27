@@ -12,20 +12,41 @@ class CheckOut
     private $productLines = [];
 
     /**
+     * @var array A collection of pricing rules used to alter the product pricing
+     */
+    private $pricingRules = [];
+
+    /**
      * Returns the grand total of the checkout
      */
     public function getGrandTotal()
     {
         $checkoutTotal = 0.0;
-        foreach($this->productLines as $line)
+        foreach($this->productLines as $sku => $line)
         {
-            $checkoutTotal += $line['lineTotal'];
+            $product = $line['product'];
+            $productQuantity = $line['qty'];
+            $rules = [];
+            if(array_key_exists($sku, $this->pricingRules)) {
+                $rules = $this->pricingRules[$sku];
+            }
+
+            foreach($rules as $ruleQuantity => $rulePrice) {
+                $multiplier = floor($productQuantity / $ruleQuantity);
+                if($multiplier > 0) {
+                    $checkoutTotal += $rulePrice * $multiplier;
+                    $productQuantity -= $ruleQuantity * $multiplier;
+                }
+            }
+
+            $checkoutTotal += $productQuantity * $product->getUnitPrice();
         }
         return $checkoutTotal;
     }
 
-    public function __construct($pricing_rules)
+    public function __construct(array $pricing_rules)
     {
+        $this->pricingRules = $pricing_rules;
     }
 
     /**
@@ -36,14 +57,11 @@ class CheckOut
         if(!array_key_exists($product->getSku(), $this->productLines)) {
             $this->productLines[$product->getSku()] = [
                 'product' => $product,
-                'qty' => 0,
-                'lineTotal' => 0.0
+                'qty' => 0
             ];
         }
 
         // Increase the quantity of products by one
-        $line = &$this->productLines[$product->getSku()];
-        $line['qty']++;
-        $line['lineTotal'] = $product->getUnitPrice() * $line['qty'];
+        $this->productLines[$product->getSku()]['qty']++;
     }
 }
